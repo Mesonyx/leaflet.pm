@@ -15,7 +15,7 @@ const DragMixin = {
 
         this._layer.on('mousedown', this._dragMixinOnMouseDown, this);
     },
-    _dragMixinOnMouseUp() {
+    _dragMixinOnMouseUp(e) {
         const el = this._layer._path;
 
         // re-enable map drag
@@ -83,6 +83,11 @@ const DragMixin = {
         this._onLayerDrag(e);
     },
     _dragMixinOnMouseDown(e) {
+        // only let left-mouse-button events handle dragging by default (to prevent numerous unexpected behaviors)
+        if(this.options.leftButtonDragOnly && !this._isMouseEventFromLeftButton(e)) {
+            return
+        }
+
         // save current map dragging state
         if(this._safeToCacheDragState){
             this._originalMapDragState = this._layer._map.dragging._enabled;
@@ -141,6 +146,16 @@ const DragMixin = {
         // fire pm:dragstart event
         this._layer.fire('pm:drag');
     },
+
+    _isMouseEventFromLeftButton(e) {
+        let evt = e.originalEvent || window.event
+        if ("buttons" in evt) {
+            return evt.buttons == 1
+        } else {
+            let button = evt.which || evt.button
+            return button == 1
+        }
+    }
 };
 
 export default DragMixin;
